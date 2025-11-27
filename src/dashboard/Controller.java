@@ -2,6 +2,7 @@ package dashboard;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -9,18 +10,28 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Pane; // Per il grafico (inizialmente vuoto)
 import javafx.scene.layout.StackPane;
 import javafx.geometry.Insets; // Spaziatura
-
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.ListView;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
 
 public class Controller {
     private BorderPane root;
@@ -28,8 +39,10 @@ public class Controller {
     private Pane storicoView; // Contenitore per il futuro grafico
     private Pane filterTable; // Contenitore per il futuro filtro per la tabella
     private Pane nullTable; // Vuoto da mettere a sx della tabella
+    private ObservableList<Item> allItems = FXCollections.observableArrayList(); // Lista di appoggio per memorizzare i dati del database
 
     public Controller() {
+        
         root = new BorderPane();
 
         Label welcomeLabel = new Label("Benvenuto! Seleziona 'Database' o 'Storico' per iniziare.");
@@ -45,12 +58,47 @@ public class Controller {
         nullTable = new VBox();
         filterTable.setPadding(new Insets(5,50,10,10));
         nullTable.setPadding(new Insets(10));
+        
+        // 1.1 Aggiunta di filtri
+        Label lblFiltro = new Label("Filtro Regione");
 
-        // 1.1 Crea l'oggetto Label
-        Label filterTitle = new Label("Filtra per:");
-        filterTable.getChildren().add(filterTitle);
+        ComboBox<String> cmbRegioni = new ComboBox<>();
+        cmbRegioni.getItems().add("Tutte");
+        cmbRegioni.getItems().addAll(
+            "Abruzzo",
+            "Basilicata",
+            "Calabria",
+            "Campania",
+            "Emilia Romagna",
+            "Friuli Venezia Giulia",
+            "Lazio",
+            "Liguria",
+            "Lombardia",
+            "Marche",
+            "Molise",
+            "Piemonte",
+            "Puglia",
+            "Sardegna",
+            "Sicilia",
+            "Toscana",
+            "Trentino Alto Adige",
+            "Umbria",
+            "Valle d'Aosta",
+            "Veneto"
+        );
+        cmbRegioni.setValue("Tutte");
 
-        // 1.2 Inizializzazione della tabella
+        // applica filtro
+        cmbRegioni.setOnAction(e -> filtraRegioni(cmbRegioni.getValue()));
+
+        VBox root1 = new VBox(10, lblFiltro, cmbRegioni);
+        root1.setPadding(new Insets(20));
+
+        filterTable.getChildren().add(root1);
+        
+
+
+        // 1.4 Inizializzazione della tabella
         initializeDatabaseTable();
 
         
@@ -139,17 +187,14 @@ public class Controller {
     
     @FXML
     private void aggiornaDati() {
-        ObservableList<Item> items = FXCollections.observableArrayList();
+        allItems.clear();
 
         try (Connection conn = DatabaseConnection.getConnection();
-            //creo un oggetto di classe Statement che mi permette di inviare query SQL al database tramite la connessione conn
             Statement instruction = conn.createStatement();
-            //eseguo un executeQuery (il Select) e lo salvo in un ResultSet)
             ResultSet rs = instruction.executeQuery(
                 "SELECT id, Anno AS anno, Nome_Ateneo AS nomeAteneo, Regione AS regione, Area_Geografica AS areaGeografica, Tipologia_Laurea AS tipologiaLaurea, Corso AS corso, F AS f, M AS m, Totale AS totale FROM imm_final"
             )) {
 
-            // legge i valori riga per riga finché ci sono righe e li mette nella lista observable
             while (rs.next()) {
                 int id = rs.getInt("id");
                 String anno = rs.getString("anno");
@@ -161,17 +206,16 @@ public class Controller {
                 int femmine = rs.getInt("f");
                 int maschi = rs.getInt("m");
                 int totale = rs.getInt("totale");
-                
-                items.add(new Item(id, anno, nome_ateneo, regione, area_geografica, tipologia_laurea, corso, femmine, maschi, totale));
+
+                allItems.add(new Item(id, anno, nome_ateneo, regione, area_geografica, tipologia_laurea, corso, femmine, maschi, totale));
             }
 
         } catch (SQLException e) {
-            System.err.println("Errore durante il caricamento dei dati del database:");
             e.printStackTrace();
         }
 
-        //lega la lista alla tabella e tramite i getter aggiorna i dati in ogni riga
-        databaseTable.setItems(items);
+        // assegna tutti i dati alla TableView
+        databaseTable.setItems(allItems);
     }
 
     // Classe Item 
@@ -216,4 +260,24 @@ public class Controller {
 
 
     }
+
+    private void filtraRegioni(String regione) {
+
+        if (regione.equals("Tutte")) {
+            databaseTable.setItems(allItems);
+            return;
+        }
+
+        ObservableList<Item> filtrati = FXCollections.observableArrayList();
+
+        for (Item it : allItems) {
+            if (it.getRegione().equals(regione)) {
+                filtrati.add(it);
+            }
+        }
+
+        databaseTable.setItems(filtrati);
+    }
+
+
 }
