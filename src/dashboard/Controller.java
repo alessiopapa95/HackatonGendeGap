@@ -2,7 +2,6 @@ package dashboard;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckMenuItem;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -10,23 +9,14 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Pane; // Per il grafico (inizialmente vuoto)
 import javafx.scene.layout.StackPane;
 import javafx.geometry.Insets; // Spaziatura
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.application.Application;
-import javafx.scene.Scene;
+
 import javafx.scene.control.ComboBox;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+
 
 import java.sql.Connection;
 import java.sql.Statement;
