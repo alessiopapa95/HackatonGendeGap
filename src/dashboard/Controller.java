@@ -50,8 +50,18 @@ public class Controller {
         nullTable = new VBox();
         filterTable.setPadding(new Insets(5,50,10,10));
         nullTable.setPadding(new Insets(10));
-        
-        // 1.1 Aggiunta di filtro regione
+
+        // 1.1 Aggiunta filtro area geografica
+        Label lblFiltroArea = new Label("Filtro Area Geografica");
+
+        ComboBox<String> cmbArea = new ComboBox<>();
+        cmbArea.getItems().add("Nessun filtro");
+        cmbArea.getItems().addAll("NORD", "CENTRO", "SUD E ISOLE", "TOTALE ATENEI"); 
+        cmbArea.setValue("Nessun filtro");
+        cmbArea.setPrefWidth(150.0);
+        cmbArea.setPrefHeight(30.0);
+
+        // 1.2 Aggiunta di filtro regione
         Label lblFiltroRegioni = new Label("Filtro Regione");
 
         ComboBox<String> cmbRegioni = new ComboBox<>();
@@ -79,22 +89,36 @@ public class Controller {
             "Veneto"
         );
         cmbRegioni.setValue("Nessun filtro");
+        cmbRegioni.setPrefWidth(150.0);
+        cmbRegioni.setPrefHeight(30.0);
 
-        // 1.2 Aggiunta filtro anno
+        // 1.3 Aggiunta filtro anno
         Label lblFiltroAnno = new Label("Filtro Anno");
 
         ComboBox<String> cmbAnno = new ComboBox<>();
         cmbAnno.getItems().add("Nessun filtro");
-        cmbAnno.getItems().addAll("2013/2014", "2014/2015", "2015/2016"); // metti tutti gli anni disponibili
+        cmbAnno.getItems().addAll("2013/2014", "2014/2015", "2015/2016", "2016/2017", "2017/2018", "2018/2019", "2019/2020", "2020/2021", "2021/2022", "2022/2023", "2023/2024"); // metti tutti gli anni disponibili
         cmbAnno.setValue("Nessun filtro");
+        cmbAnno.setPrefWidth(150.0);
+        cmbAnno.setPrefHeight(30.0);
 
-        // 1.3 Aggiunta filtro 
+        // 1.4 Aggiunta filtro corso
+        Label lblFiltroCorso = new Label("Filtro Corso");
+
+        ComboBox<String> cmbCorso = new ComboBox<>();
+        cmbCorso.getItems().add("Nessun filtro");
+        cmbCorso.getItems().addAll("Business, administration and law", "Arts and humanities", "Education", "Health and welfare", "Information and Communication Technologies (ICTs)", "Natural sciences, mathematics and statistics", "Services", "Engineering, manufacturing and construction", "Agriculture, forestry, fisheries and veterinary", "Social sciences, journalism and information"); 
+        cmbCorso.setValue("Nessun filtro");
+        cmbCorso.setPrefWidth(150.0);
+        cmbCorso.setPrefHeight(30.0);
 
         // 1.3 applica filtro
-        cmbRegioni.setOnAction(e -> applicaFiltri(cmbRegioni.getValue(),cmbAnno.getValue()));
-        cmbAnno.setOnAction(e -> applicaFiltri(cmbRegioni.getValue(),cmbAnno.getValue()));
+        cmbArea.setOnAction(e -> applicaFiltri(cmbArea.getValue(), cmbRegioni.getValue(), cmbAnno.getValue(), cmbCorso.getValue()));
+        cmbRegioni.setOnAction(e -> applicaFiltri(cmbArea.getValue(), cmbRegioni.getValue(), cmbAnno.getValue(), cmbCorso.getValue()));
+        cmbAnno.setOnAction(e -> applicaFiltri(cmbArea.getValue(), cmbRegioni.getValue(), cmbAnno.getValue(), cmbCorso.getValue()));
+        cmbCorso.setOnAction(e -> applicaFiltri(cmbArea.getValue(), cmbRegioni.getValue(), cmbAnno.getValue(), cmbCorso.getValue()));
 
-        VBox root1 = new VBox(10, lblFiltroRegioni, cmbRegioni, lblFiltroAnno, cmbAnno);
+        VBox root1 = new VBox(10, lblFiltroArea, cmbArea, lblFiltroRegioni, cmbRegioni, lblFiltroAnno, cmbAnno, lblFiltroCorso, cmbCorso);
         root1.setPadding(new Insets(20));
 
         filterTable.getChildren().add(root1);
@@ -116,7 +140,7 @@ public class Controller {
 
         // ((VBox) storicoView).getChildren().add(new javafx.scene.control.Label("Area per il Grafico Storico"));
         
-        // 3.0 Creazione e Configurazione dei Pulsanti (Top)
+        // 3.0 Creazione e Configurazione dei Pulsanti
         Button databaseButton = new Button("Database");
         Button storicoButton = new Button("Storico");
         
@@ -174,10 +198,9 @@ public class Controller {
     
     @FXML
     private void showDatabaseView() {
-        // Mostra la TableView
-        root.setLeft(filterTable); //METTERE I FILTRI
-        root.setCenter(databaseTable);
-        root.setRight(nullTable);
+        root.setLeft(filterTable); // Mostra i filtri
+        root.setCenter(databaseTable); // Mostra la TableView
+        root.setRight(nullTable); // Spazio a dx della tabella
     }
     
     @FXML
@@ -267,15 +290,34 @@ public class Controller {
 
     }
 
-    private void applicaFiltri(String regioneSelezionata, String annoSelezionato) {
+    private void applicaFiltri(String areaSelezionata, String regioneSelezionata, String annoSelezionato, String corsoSelezionato) {
 
         ObservableList<Item> filtrati = FXCollections.observableArrayList();
 
         for (Item it : allItems) {
+
+            boolean matchArea;
+            if (areaSelezionata.equals("Nessun filtro")) {
+                matchArea = true; // Nessun filtro applicato
+            } else if (areaSelezionata.equals("NORD")) {
+                // Se selezionato "NORD", accetta sia NORD-EST che NORD-OVEST
+                matchArea = it.getAreaGeografica().equals("NORD-EST") || it.getAreaGeografica().equals("NORD-OVEST");
+            } else if (areaSelezionata.equals("SUD E ISOLE")) {
+                // Se selezionato "SUD E ISOLE", accetta sia SUD che ISOLE
+                matchArea = it.getAreaGeografica().equals("SUD") || it.getAreaGeografica().equals("ISOLE");
+            } else if (areaSelezionata.equals("TOTALE ATENEI")) {
+                // Se selezionato "TOTALE", allora accetta ITALIA
+                matchArea = it.getAreaGeografica().equals("ITALIA");
+            } else {
+                // Per tutti gli altri filtri (e.g., "CENTRO", o le aree specifiche), usa il matching esatto
+                matchArea = it.getAreaGeografica().equals(areaSelezionata);
+            }
             boolean matchRegione = regioneSelezionata.equals("Nessun filtro") || it.getRegione().equals(regioneSelezionata);
             boolean matchAnno = annoSelezionato.equals("Nessun filtro") || it.getAnno().equals(annoSelezionato);
+            boolean matchCorso = corsoSelezionato.equals("Nessun filtro") || it.getCorso().equals(corsoSelezionato);
 
-            if (matchRegione && matchAnno) {
+
+            if (matchArea && matchRegione && matchAnno && matchCorso) {
                 filtrati.add(it);
             }
         }
