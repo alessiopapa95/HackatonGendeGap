@@ -6,9 +6,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Pane; // Per il grafico (inizialmente vuoto)
+import javafx.scene.layout.Pane; 
 import javafx.scene.layout.StackPane;
-import javafx.geometry.Insets; // Spaziatura
+import javafx.geometry.Insets;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,7 +16,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.chart.LineChart;
-import javafx.scene.chart.CategoryAxis; // Usiamo CategoryAxis per gli anni (Stringhe)
+import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.BarChart;
@@ -34,10 +34,10 @@ import java.sql.SQLException;
 public class Controller {
     private BorderPane root;
     private TableView<Item> databaseTable;
-    private Pane storicoView; // Contenitore per il futuro grafico
-    private Pane filterTable; // Contenitore per il futuro filtro per la tabella
+    private Pane storicoView; 
+    private Pane filterTable; 
     private Pane nullTable; // Vuoto da mettere a dx della tabella
-    private Pane storicoPane; // Vuoto da mettere a dx della tabella
+    private Pane storicoPane; 
 
     private ObservableList<Item> allItems = FXCollections.observableArrayList(); // Lista di appoggio per memorizzare i dati del database
 
@@ -120,7 +120,7 @@ public class Controller {
         cmbCorso.setPrefWidth(150.0);
         cmbCorso.setPrefHeight(30.0);
 
-        // 1.5 applica filtro
+        // 1.5 Applica filtro
         cmbArea.setOnAction(e -> applicaFiltri(cmbArea.getValue(), cmbRegioni.getValue(), cmbAnno.getValue(), cmbCorso.getValue()));
         cmbRegioni.setOnAction(e -> applicaFiltri(cmbArea.getValue(), cmbRegioni.getValue(), cmbAnno.getValue(), cmbCorso.getValue()));
         cmbAnno.setOnAction(e -> applicaFiltri(cmbArea.getValue(), cmbRegioni.getValue(), cmbAnno.getValue(), cmbCorso.getValue()));
@@ -136,8 +136,8 @@ public class Controller {
         initializeDatabaseTable();
 
                 
-        // 2.0 Inizializzazione della vista "Storico" (Inizialmente vuota)
-        storicoView = new VBox(); // VBox o StackPane, a seconda delle esigenze
+        // 2.0 Inizializzazione della vista "Storico"
+        storicoView = new VBox();
         storicoView.setPadding(new Insets(10));
         Label storicoLabel = new Label("WORK IN PROGRESS: Antonio pensaci tu");
         storicoLabel.setStyle("-fx-font-size: 30px; -fx-text-fill: #911;"); 
@@ -159,7 +159,7 @@ public class Controller {
         root.setTop(topButtons);
         
         // 4.0 Settaggio della vista iniziale
-        aggiornaDati();   // Carica i dati
+        aggiornaDati();
         root.setCenter(welcomePane);
     }
     
@@ -215,16 +215,13 @@ public class Controller {
         LineChart<String, Number> lineChartStorico = createStoricoChart();
         BarChart<String, Number> barChartDistribuzione = createGenderDistributionChart();
         
-        // Rimuoviamo il setPrefWidth, lasciamo che HBox gestisca la larghezza
-        // lineChartStorico.setPrefWidth(400); 
-        // barChartDistribuzione.setPrefWidth(400); 
-        
         // 2. Affiancali in un HBox
         HBox chartsContainer = new HBox(20); // Spaziatura di 20 pixel tra i grafici
         chartsContainer.setPadding(new Insets(20));
         chartsContainer.getChildren().addAll(lineChartStorico, barChartDistribuzione);
         
-        // 3. APPLICA L'ESPANSIONE ORRIZONTALE (HGrow)
+        // 3. Applica l'espansione orizzontale
+
         // Questo dice al layout HBox di dare ai nodi la priorità di espandersi
         HBox.setHgrow(lineChartStorico, Priority.ALWAYS);
         HBox.setHgrow(barChartDistribuzione, Priority.ALWAYS);
@@ -399,8 +396,6 @@ public class Controller {
         double totaleGenerale = entry.getValue()[1];
         
         double rapporto = (totaleGenerale > 0) ? (totaleFemmine / totaleGenerale) : 0.0;
-        
-        // **!!! MODIFICA CHIAVE QUI: Moltiplica il rapporto per 100 !!!**
         double rapportoPercentuale = rapporto * 100.0; 
         
         // Aggiungi il punto (Anno, Rapporto in %) alla serie
@@ -414,7 +409,7 @@ public class Controller {
 
     private BarChart<String, Number> createGenderDistributionChart() {
 
-        // --- Assi ---
+        // Assi
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis(0, 100, 10);
 
@@ -423,19 +418,19 @@ public class Controller {
         yAxis.setAutoRanging(false);
         yAxis.setTickLabelFormatter(new NumberAxis.DefaultFormatter(yAxis, null, "%"));
 
-        // --- Grafico ---
+        // Grafico
         final BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
         barChart.setTitle("Distribuzione di Genere in ICTs per Area Geografica");
         barChart.setCategoryGap(20);
 
-        // --- Serie F / M ---
+        // Serie F / M
         XYChart.Series<String, Number> seriesF = new XYChart.Series<>();
         seriesF.setName("Donne (F)");
 
         XYChart.Series<String, Number> seriesM = new XYChart.Series<>();
         seriesM.setName("Uomini (M)");
 
-        // --- Aggregazione dati ---
+        // Aggregazione dati
         Map<String, double[]> datiAggregati = new LinkedHashMap<>();
         datiAggregati.put("NORD", new double[]{0, 0, 0});
         datiAggregati.put("CENTRO", new double[]{0, 0, 0});
